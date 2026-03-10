@@ -22,7 +22,30 @@ class StoreWallet extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => 'required|max:255|string',
+            'currency' => 'required|max:255|string',
+            'password' => 'required|max:255',
+            'user_id' => 'required|int|exists:users,id',
+
+        ];
+    }
+
+    public function message()
+    {
+        return [
+            'title.required' => 'Title is a required input.',
+            'title.max' => 'Title needs to be less than 255 charachters.',
+
+            'currency.required' => 'Lastname is a required input.',
+            'currency.max' => 'Lastname needs to be less than 255 charachters.',
+
+            'user_id.exists' => 'This user_id is is not real',
+            'user_id.required' => 'User_id is a required input.',
+            'user_id.int' => 'User_id needs to be an integer.',
+
+            'password.required' => 'Password is a required input.',
+            'password.max' => 'Password needs to be less than 255 charachters.',
+
         ];
     }
 }

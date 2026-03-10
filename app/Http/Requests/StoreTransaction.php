@@ -11,7 +11,7 @@ class StoreTransaction extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,24 @@ class StoreTransaction extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'amount' => 'required|numeric',
+            'origin_wallet_id' => 'required|int|exists:wallets,id',
+            'destination_wallet_id' => 'required|int|exists:wallets,id',
+        ];
+    }
+
+    public function message()
+    {
+        return [
+            'amount.required' => 'Amount is a required input.',
+            'amount.numeric' => 'Amount needs to be numeric.',
+
+            'origin_wallet_id.required' => 'Source wallet is a required input.',
+            'origin_wallet_id.int' => 'Source wallet needs to be and integer.',
+
+            'destination_wallet_id.required' => 'Source wallet is a required input.',
+            'destination_wallet_id.int' => 'Source wallet needs to be and integer.',
+
         ];
     }
 }
