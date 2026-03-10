@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Wallet extends Model
 {
-    Use SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = ['title', 'password', 'currency', 'user_id'];
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
