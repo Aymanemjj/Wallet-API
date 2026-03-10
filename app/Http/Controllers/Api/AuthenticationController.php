@@ -8,6 +8,7 @@ use App\Http\Requests\StoreUser;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthenticationController extends Controller
 {
@@ -48,7 +49,13 @@ class AuthenticationController extends Controller
             ], 500);
         }
     }
-
+    public function profile(Request $request){
+        return response()->json([
+            'status' => 'success',
+            'message'=> 'Yout profile is as follows',
+            'data' => Auth::user(),
+        ]);
+    }
     public function logOut(Request $request)
     {
         try {

@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Transaction extends Model
 {
-    use SoftDeletes;
+    /*     use SoftDeletes;
+ */
     protected $fillable = ['amount', 'origin_wallet_id', 'destination_wallet_id'];
 
     public function origin()

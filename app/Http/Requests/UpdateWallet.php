@@ -13,7 +13,7 @@ class UpdateWallet extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
