@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransaction;
+use App\Models\Transaction;
 use App\Services\TransactionService;
 use Exception;
 use Illuminate\Http\Request;
@@ -43,9 +44,16 @@ class TransactionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $Rtransactions = Transaction::where('destination_wallet_id', $id)->get();
+        $Stransactions = Transaction::where('origin_wallet_id', $id)->get();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Transaction history',
+            'sent' => $Stransactions,
+            'recieved'=>$Rtransactions,
+        ]);
     }
 
     /**

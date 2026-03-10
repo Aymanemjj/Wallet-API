@@ -21,6 +21,9 @@ Route::post('/wallets/{id}/withdraw', [WalletController::class, 'withdraw']);
 
 Route::post('/wallets/{id}/transfer', [TransactionController::class, 'store']);
 
+Route::get('/wallets/{id}/transactions', [TransactionController::class, 'show']);
+
+
 });
 
 
