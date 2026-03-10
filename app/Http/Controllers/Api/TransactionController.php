@@ -3,10 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreTransaction;
+use App\Services\TransactionService;
+use Exception;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
+
+    private TransactionService $TransactionService;
+    public function __construct(TransactionService $TransactionService)
+    {
+        $this->TransactionService = $TransactionService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -18,9 +28,16 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTransaction $request)
     {
-        //
+        try {
+            return $this->TransactionService->store($request);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

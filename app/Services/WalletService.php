@@ -46,8 +46,13 @@ class WalletService
         ], 200);
     }
 
-    public function deposit($id, $amount)
+    public function deposit($id, $request)
     {
+        $validated = $request->validate([
+            'amount' => 'required|numeric'
+        ]);
+        $amount = $validated['amount'];
+
         $wallet = Wallet::find($id);
 
         if ($wallet == null) {
@@ -68,8 +73,14 @@ class WalletService
     }
 
 
-    public function withdraw($id, $amount)
+    public function withdraw($id, $request)
     {
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric'
+        ]);
+        $amount = $validated['amount'];
+
         $wallet = Wallet::find($id);
 
         if ($wallet == null) {

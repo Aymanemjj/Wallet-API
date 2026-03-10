@@ -65,10 +65,11 @@ class WalletController extends Controller
         }
     }
 
-    public function deposit($id, $amount)
+    public function deposit($id, Request $request)
     {
+
         try {
-            return $this->WalletService->deposit($id, $amount);
+            return $this->WalletService->deposit($id, $request);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'fail',
@@ -77,10 +78,10 @@ class WalletController extends Controller
         }
     }
 
-    public function withdraw($id, $amount)
+    public function withdraw($id, Request $request)
     {
         try {
-            return $this->WalletService->withdraw($id, $amount);
+            return $this->WalletService->withdraw($id, $request);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'fail',
