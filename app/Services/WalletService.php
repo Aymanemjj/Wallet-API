@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Wallet;
+
 class WalletService
 {
     /**
@@ -11,4 +13,15 @@ class WalletService
     {
         //
     }
+
+    public function store($request){
+        $validated = $request->validated();
+
+        $wallet = Wallet::create($validated);
+
+        return response()->json([
+            "status"=>"success",
+            ""
+        ]);
+    }   
 }
