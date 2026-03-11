@@ -24,35 +24,32 @@ class StoreWallet extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|max:255|string',
+            'name' => 'required|max:255|string',
             'currency' => 'required|max:255|string',
-            'password' => 'required|max:255',
         ];
     }
 
     public function message()
     {
         return [
-            'title.required' => 'Title is a required input.',
-            'title.max' => 'Title needs to be less than 255 charachters.',
+            'name.required' => 'Title is a required input.',
+            'name.max' => 'Title needs to be less than 255 charachters.',
 
             'currency.required' => 'Lastname is a required input.',
             'currency.max' => 'Lastname needs to be less than 255 charachters.',
 
-            'password.required' => 'Password is a required input.',
-            'password.max' => 'Password needs to be less than 255 charachters.',
-
         ];
     }
 
-/*     public function failedValidation(Validator $validator)
+     public function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();
         $response = response()->json([
-            'message' => 'Invalid data send',
-            'details' => $errors->messages(),
+            "success"=> false,
+            'message' => 'Erreur de validation',
+            'errors' => $errors->messages(),
         ], 422);
 
         throw new HttpResponseException($response);
-    } */
+    } 
 }

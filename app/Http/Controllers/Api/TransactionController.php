@@ -29,13 +29,13 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTransaction $request)
+    public function store($id,StoreTransaction $request)
     {
         try {
-            return $this->TransactionService->store($request);
+            return $this->TransactionService->store($id,$request);
         } catch (Exception $e) {
             return response()->json([
-                'status' => 'fail',
+                'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
         }
@@ -46,10 +46,10 @@ class TransactionController extends Controller
      */
     public function show($id)
     {
-        $Rtransactions = Transaction::where('destination_wallet_id', $id)->get();
-        $Stransactions = Transaction::where('origin_wallet_id', $id)->get();
+        $Rtransactions = Transaction::where('receiver_wallet_id', $id)->get();
+        $Stransactions = Transaction::where('sender_wallet_id', $id)->get();
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Transaction history',
             'sent' => $Stransactions,
             'recieved'=>$Rtransactions,

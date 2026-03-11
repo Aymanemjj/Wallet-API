@@ -24,9 +24,8 @@ class UserService
         $user = User::create($validated);
 
         $results['token'] = $user->createToken('wallet_api')->plainTextToken;
-        $results['greeting'] = "Welcom " . $user->firstname;
 
-        return $results;
+        return [$results, $user];
     }
 
     public function login($request)
@@ -35,17 +34,16 @@ class UserService
 
         if (!Auth::attempt($credentials)) {
             return response()->json([
-                'status' => 'fail',
+                'success' => false,
                 'message' => 'Wrong credentials'
             ], 401);
         }
 
         $user = Auth::user();
         /* check later */
-        $results['token'] = $user->createToken('wallet_api')->plainTextToken; 
+        $token = $user->createToken('wallet_api')->plainTextToken; 
 
-        $results['greeting'] = "Welcom " . $user->firstname;
-        return $results;
+        return ["token"=>$token, 'user'=>$user];
 
     }
 

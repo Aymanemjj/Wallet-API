@@ -9,7 +9,7 @@ class Wallet extends Model
 {
 /*     use SoftDeletes;
  */
-    protected $fillable = ['title', 'password', 'currency', 'sold', 'user_id'];
+    protected $fillable = ['name', 'currency', 'balance', 'user_id'];
 
     public function owner()
     {

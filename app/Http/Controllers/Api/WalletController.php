@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAction;
+use App\Http\Requests\StoreTransaction;
 use App\Http\Requests\StoreWallet;
 use App\Models\Wallet;
 use App\Services\WalletService;
@@ -26,11 +28,11 @@ class WalletController extends Controller
      */
     public function index()
     {
-        $wallets = Wallet::where('user_id', Auth::user()->id)->get();
+        $wallets = Wallet::where('user_id', Auth::user()->id)->get() ?? [];
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Here are all your wallets',
+            'success' => true,
+            'message' => 'Liste des wallets récupérée',
             'data' => $wallets
         ], 200);
     }
@@ -65,7 +67,7 @@ class WalletController extends Controller
         }
     }
 
-    public function deposit($id, Request $request)
+    public function deposit($id, StoreAction $request)
     {
 
         try {
@@ -78,7 +80,7 @@ class WalletController extends Controller
         }
     }
 
-    public function withdraw($id, Request $request)
+    public function withdraw($id, StoreAction $request)
     {
         try {
             return $this->WalletService->withdraw($id, $request);

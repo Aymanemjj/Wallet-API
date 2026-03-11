@@ -7,6 +7,7 @@ use App\Http\Requests\LoginUser;
 use App\Http\Requests\StoreUser;
 use App\Services\UserService;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,13 +27,13 @@ class AuthenticationController extends Controller
         try {
 
             return response()->json([
-                'status' => 'success',
-                'message' => 'User registered successfully.',
+                'success' => true,
+                'message' => 'Inscription réussie.',
                 'data' => $this->UserService->register($request)
-            ], 200);
+            ], 201);
         } catch (Exception $e) {
             return response()->json([
-                'status' => 'fail',
+                'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
         }
@@ -41,32 +42,38 @@ class AuthenticationController extends Controller
     public function login(LoginUser $request)
     {
         try {
-            return $this->UserService->login($request);
+            return response()->json([
+                'success' => true,
+                'message' => 'Connexion réussie.',
+                'data' =>  $this->UserService->login($request)
+            ], 200);
+            
         } catch (Exception $e) {
             return response()->json([
-                'status' => 'fail',
+                'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
         }
     }
-    public function profile(Request $request){
+    public function profile(Request $request)
+    {
         return response()->json([
-            'status' => 'success',
-            'message'=> 'Yout profile is as follows',
-            'data' => Auth::user(),
-        ]);
+            'success' => true,
+            'message' => 'Profil utilisateur récupéré',
+            'data' => ["user"=>Auth::user()],
+        ],200);
     }
     public function logOut(Request $request)
     {
         try {
             $this->UserService->logOut($request);
             return response()->json([
-                'status' => 'success',
-                'message' => 'User logged out successfully.',
+                'success' => true,
+                'message' => 'Déconnexion réussie.',
             ], 200);
-        } catch (Exception $e) {
+        } catch (AuthorizationException $e) {
             return response()->json([
-                'status' => 'fail',
+                'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
         }

@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Http\Resources\DWResource;
+use App\Http\Resources\WalletResource;
+use App\Models\Transaction;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,10 +26,10 @@ class WalletService
         $wallet = Wallet::create($validated);
 
         return response()->json([
-            "status" => "success",
+            "success" => true,
             "message" => "Wallet created !",
-            "data" => Wallet::find($wallet->id),
-        ]);
+            "data" => ["wallet" => Wallet::find($wallet->id)],
+        ], 201);
     }
 
     public function show($id)
@@ -35,9 +38,15 @@ class WalletService
 
         if ($wallet == null) {
             return response()->json([
-                'status' => 'fail',
-                'message' => 'You have no such wallet'
-            ]);
+                'success' => false,
+                'message' => 'Wallet introuvable'
+            ], 404);
+        }
+        if ($wallet->user_id != Auth::user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => "Vous n'êtes pas autorisé à accéder à ce wallet"
+            ], 403);
         }
 
         return response()->json([
@@ -48,27 +57,35 @@ class WalletService
 
     public function deposit($id, $request)
     {
-        $validated = $request->validate([
-            'amount' => 'required|numeric'
-        ]);
-        $amount = $validated['amount'];
-
+        $validated = $request->validated();
+        $validated['wallet_id'] = $id;
+        $validated['type'] = 'deposit';
         $wallet = Wallet::find($id);
 
         if ($wallet == null) {
             return response()->json([
-                'status' => 'fail',
-                'message' => 'You have no such wallet'
-            ]);
+                'success' => false,
+                'message' => 'Wallet introuvable'
+            ], 404);
         }
 
-        $wallet->sold += $amount;
+
+        $validated['balance_after'] = $wallet->balance + $validated['amount'];
+
+        if ($wallet->user_id != Auth::user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => "Vous n'êtes pas autorisé à accéder à ce wallet"
+            ], 403);
+        }
+        $transaction = Transaction::create($validated);
+        $wallet->balance += $transaction->amount;
         $wallet->save();
 
         return response()->json([
-            'status' => 'success',
-            'message' => "$amount was deposited in $wallet->title wallet, your new sold is: $wallet->sold $",
-            'data' => $wallet
+            'success' => true,
+            'message' => "Dépôt effectué avec succès",
+            'data' => ["transaction" => DWResource::make($transaction), "wallet" => WalletResource::make($wallet)]
         ], 200);
     }
 
@@ -76,35 +93,40 @@ class WalletService
     public function withdraw($id, $request)
     {
 
-        $validated = $request->validate([
-            'amount' => 'required|numeric'
-        ]);
-        $amount = $validated['amount'];
-
+        $validated = $request->validated();
+        $validated['wallet_id'] = $id;
+        $validated['type'] = 'withdraw';
         $wallet = Wallet::find($id);
 
         if ($wallet == null) {
             return response()->json([
-                'status' => 'fail',
-                'message' => 'You have no such wallet'
-            ]);
+                'success' => false,
+                'message' => 'Wallet introuvable'
+            ], 404);
         }
-
-        if ($wallet->sold < $amount) {
+        if ($wallet->user_id != Auth::user()->id) {
             return response()->json([
-                'status' => 'fail',
-                'message' => "You don't have enough sold in your wallet, your sold is: $wallet->sold $"
-            ]);
+                'success' => false,
+                'message' => "Vous n'êtes pas autorisé à accéder à ce wallet"
+            ], 403);
+        }
+        if ($wallet->balance < $validated['amount']) {
+            return response()->json([
+                'success' => false,
+                'message' => "Solde insuffisant. Solde actuel : $wallet->balance $"
+            ],400);
         }
 
+        $validated['balance_after'] = $wallet->balance - $validated['amount'];
+        $transaction = Transaction::create($validated);
 
-        $wallet->sold -= $amount;
+        $wallet->balance -= $transaction->amount;
         $wallet->save();
 
         return response()->json([
-            'status' => 'success',
-            'message' => "$amount was withdrawn from $wallet->title wallet, your new sold is: $wallet->sold $",
-            'data' => $wallet
+            'success' => true,
+            'message' => "Retrait effectué avec succès.",
+            'data' => ["transaction" => DWResource::make($transaction), "wallet" => WalletResource::make($wallet)]
         ], 200);
     }
 }

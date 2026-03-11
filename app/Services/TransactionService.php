@@ -15,41 +15,51 @@ class TransactionService
         //
     }
 
-    public function store($request)
+    public function store($id,$request)
     {
         $validated = $request->validated();
+        $validated['wallet_id'] = $id;
+        $validated['type'] = 'transaction';
 
-        $Owallet = Wallet::find($validated['origin_wallet_id']);
-        $Dwallet = Wallet::find($validated['destination_wallet_id']);
+        $Owallet = Wallet::find($validated['sender_wallet_id']);
+        $Dwallet = Wallet::find($validated['receiver_wallet_id']);
 
         if ($Owallet == null) {
             return response()->json([
-                'status' => 'fail',
-                'message' => 'You have no such wallet'
-            ]);
-        }
-
-        if ($Owallet->sold < $validated['amount']) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => "You don't have enough sold in your wallet, your sold is: " . $Owallet->sold . "$"
-            ]);
+                'success' => false,
+                'message' => 'Le wallet source est introuvable'
+            ], 404);
         }
 
         if ($Dwallet == null) {
             return response()->json([
-                'status' => 'fail',
-                'message' => "Destination wallet doesn't exist"
+                'success' => false,
+                'message' => "Le wallet destinataire est introuvable"
+            ], 404);
+        }
+
+        if ($Dwallet->currency != $Owallet->currency) {
+            return response()->json([
+                'success' => false,
+                'message' => "Transfert impossible : les deux wallets doivent avoir la même devise"
+            ], 400);
+        }
+
+        if ($Owallet->balance < $validated['amount']) {
+            return response()->json([
+                'success' => false,
+                'message' => "Solde insuffisant. Solde actuel : " . $Owallet->balance . "$"
             ]);
         }
+
 
         $transaction =  Transaction::create($validated);
 
         $this->calculate($Owallet, $Dwallet, $transaction);
 
         return response()->json([
-            'status' => 'success',
-            'message' => "$transaction->amount was withdrawn from " . $Owallet->title . "wallet, your new sold is: " . $Owallet->sold . "$, and was sent to " . $Dwallet->title . "'s wallet",
+            'success' => 'success',
+            'message' => "$transaction->amount was withdrawn from " . $Owallet->title . "wallet, your new balance is: " . $Owallet->balance . "$, and was sent to " . $Dwallet->title . "'s wallet",
         ]);
     }
 

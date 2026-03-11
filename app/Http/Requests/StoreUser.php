@@ -50,14 +50,15 @@ class StoreUser extends FormRequest
         ];
     }
 
-/*     public function failedValidation(Validator $validator)
+    public function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();
         $response = response()->json([
-            'message' => 'Invalid data send',
-            'details' => $errors->messages(),
+            "success"=>false,
+            'message' => 'Erreur de validation',
+            'error' => $errors->messages(),
         ], 422);
 
         throw new HttpResponseException($response);
-    } */
+    }
 }

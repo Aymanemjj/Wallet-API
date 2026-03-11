@@ -9,20 +9,27 @@ class Transaction extends Model
 {
     /*     use SoftDeletes;
  */
-    protected $fillable = ['amount', 'origin_wallet_id', 'destination_wallet_id'];
+    protected $fillable = ['amount', 'sender_wallet_id', 'receiver_wallet_id', "description", "wallet_id", 'type', 'balance_after'];
 
-    public function origin()
-    {
-        return $this->belongsTo(Wallet::class, 'origin_wallet_id');
+
+
+
+    public function wallet(){
+        return $this->belongsTo(Wallet::class, 'wallet_id');
     }
 
-    public function destination()
+    public function sender()
     {
-        return $this->belongsTo(Wallet::class, 'destination_wallet_id');
+        return $this->belongsTo(Wallet::class, 'sender_wallet_id');
+    }
+
+    public function receiver()
+    {
+        return $this->belongsTo(Wallet::class, 'receiver_wallet_id');
     }
 
     public function owner()
     {
-        return $this->origin->user();
+        return $this->sender->user();
     }
 }
