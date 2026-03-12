@@ -25,8 +25,7 @@ class StoreTransaction extends FormRequest
     {
         return [
             'amount' => 'required|numeric|gt:0',
-            'sender_wallet_id' => 'required|int|exists:wallets,id',
-            'receiver_wallet_id' => 'required|int|exists:wallets,id',
+            'receiver_wallet_id' => 'required|int',
             'description' => 'string',
 
         ];

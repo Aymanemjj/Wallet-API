@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Http\Resources\TransactionInResource;
+use App\Http\Resources\TransactionOutResource;
+use App\Http\Resources\WalletResource;
 use App\Models\Transaction;
 use App\Models\Wallet;
 
@@ -18,12 +21,10 @@ class TransactionService
     public function store($id,$request)
     {
         $validated = $request->validated();
-        $validated['wallet_id'] = $id;
-        $validated['type'] = 'transaction';
-
+        $validated['sender_wallet_id'] = $id;
         $Owallet = Wallet::find($validated['sender_wallet_id']);
         $Dwallet = Wallet::find($validated['receiver_wallet_id']);
-
+        
         if ($Owallet == null) {
             return response()->json([
                 'success' => false,
@@ -53,22 +54,36 @@ class TransactionService
         }
 
 
-        $transaction =  Transaction::create($validated);
-
-        $this->calculate($Owallet, $Dwallet, $transaction);
+        $transaction_out =  Transaction::create([
+            'amount'=> $validated['amount'],
+            'type'=>"transfer_out",
+            "wallet_id" => $id,
+            "receiver_wallet_id"=>$validated['receiver_wallet_id'],
+            "description"=>$validated['description'],
+            "balance_after"=>$Owallet['balance'] - $validated['amount'],
+        ]);
+        $transaction_in=Transaction::create([
+            'amount'=> $validated['amount'],
+            'type'=>"transfer_in",
+            "wallet_id" => $validated['receiver_wallet_id'],
+            "sender_wallet_id"=>$id,
+            "description"=>$validated['description'],
+            "balance_after"=>$Dwallet['balance'] - $validated['amount'],
+        ]);
+        $this->calculate($Owallet, $Dwallet, $validated);
 
         return response()->json([
             'success' => 'success',
-            'message' => "$transaction->amount was withdrawn from " . $Owallet->title . "wallet, your new balance is: " . $Owallet->balance . "$, and was sent to " . $Dwallet->title . "'s wallet",
+            'message' => "Transfert effectué avec succès",
+            'data'=> ['transaction_out'=>TransactionOutResource::make($transaction_out), 'transaction_in'=>TransactionInResource::make($transaction_in), 'wallet'=>WalletResource::make($Owallet)]
         ]);
     }
 
-    public function calculate($Owallet, $Dwallet, $transaction)
+    public function calculate($Owallet, $Dwallet, $validated)
     {
-
-        $Owallet->sold -= $transaction->amount;
+        $Owallet->balance -= $validated['amount'];
         $Owallet->save();
-        $Dwallet->sold += $transaction->amount;
+        $Dwallet->balance += $validated['amount'];
         $Dwallet->save();
     }
 }
