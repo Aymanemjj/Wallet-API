@@ -51,29 +51,8 @@ class TransactionController extends Controller
      */
     public function show($id)
     {
-        if (!Wallet::exists($id)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ressource introuvable',
-            ], 404);
-        }
+            return $this->TransactionService->history($id);
 
-        if (Auth::user()->isOwner($id) == false) {
-            return response()->json([
-                'success' => false,
-                'message' => "Vous n'êtes pas autorisé à effectuer cette action"
-
-            ]);
-        }
-
-        $transactions = Transaction::where('wallet_id', $id)->get();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Historique des transactions récupéré',
-            'data' => TransactionHistoryResource::collection($transactions)
-
-        ]);
     }
 
     /**

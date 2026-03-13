@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Http\Resources\TransactionHistoryResource;
 use App\Http\Resources\TransactionInResource;
 use App\Http\Resources\TransactionOutResource;
 use App\Http\Resources\WalletResource;
 use App\Models\Transaction;
 use App\Models\Wallet;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionService
 {
@@ -18,18 +20,25 @@ class TransactionService
         //
     }
 
-    public function store($id,$request)
+    public function store($id, $request)
     {
         $validated = $request->validated();
         $validated['sender_wallet_id'] = $id;
         $Owallet = Wallet::find($validated['sender_wallet_id']);
         $Dwallet = Wallet::find($validated['receiver_wallet_id']);
-        
+
         if ($Owallet == null) {
             return response()->json([
                 'success' => false,
                 'message' => 'Le wallet source est introuvable'
             ], 404);
+        }
+
+        if (Auth::user()->isOwner($id) == false) {
+            return response()->json([
+                'success' => false,
+                'message' => "Vous n'êtes pas autorisé à accéder à ce wallet"
+            ], 403);
         }
 
         if ($Dwallet == null) {
@@ -55,27 +64,27 @@ class TransactionService
 
 
         $transaction_out =  Transaction::create([
-            'amount'=> $validated['amount'],
-            'type'=>"transfer_out",
+            'amount' => $validated['amount'],
+            'type' => "transfer_out",
             "wallet_id" => $id,
-            "receiver_wallet_id"=>$validated['receiver_wallet_id'],
-            "description"=>$validated['description'],
-            "balance_after"=>$Owallet['balance'] - $validated['amount'],
+            "receiver_wallet_id" => $validated['receiver_wallet_id'],
+            "description" => $validated['description'],
+            "balance_after" => $Owallet['balance'] - $validated['amount'],
         ]);
-        $transaction_in=Transaction::create([
-            'amount'=> $validated['amount'],
-            'type'=>"transfer_in",
+        $transaction_in = Transaction::create([
+            'amount' => $validated['amount'],
+            'type' => "transfer_in",
             "wallet_id" => $validated['receiver_wallet_id'],
-            "sender_wallet_id"=>$id,
-            "description"=>$validated['description'],
-            "balance_after"=>$Dwallet['balance'] - $validated['amount'],
+            "sender_wallet_id" => $id,
+            "description" => $validated['description'],
+            "balance_after" => $Dwallet['balance'] - $validated['amount'],
         ]);
         $this->calculate($Owallet, $Dwallet, $validated);
 
         return response()->json([
             'success' => 'success',
             'message' => "Transfert effectué avec succès",
-            'data'=> ['transaction_out'=>TransactionOutResource::make($transaction_out), 'transaction_in'=>TransactionInResource::make($transaction_in), 'wallet'=>WalletResource::make($Owallet)]
+            'data' => ['transaction_out' => TransactionOutResource::make($transaction_out), 'transaction_in' => TransactionInResource::make($transaction_in), 'wallet' => WalletResource::make($Owallet)]
         ]);
     }
 
@@ -85,5 +94,32 @@ class TransactionService
         $Owallet->save();
         $Dwallet->balance += $validated['amount'];
         $Dwallet->save();
+    }
+
+    public function history($id)
+    {
+        if (!Wallet::exists($id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ressource introuvable',
+            ], 404);
+        }
+
+        if (Auth::user()->isOwner($id) == false) {
+            return response()->json([
+                'success' => false,
+                'message' => "Vous n'êtes pas autorisé à effectuer cette action"
+
+            ],403);
+        }
+
+        $transactions = Transaction::where('wallet_id', $id)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Historique des transactions récupéré',
+            'data' => TransactionHistoryResource::collection($transactions)
+
+        ]);
     }
 }

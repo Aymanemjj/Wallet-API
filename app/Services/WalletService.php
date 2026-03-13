@@ -60,6 +60,8 @@ class WalletService
         $validated = $request->validated();
         $validated['wallet_id'] = $id;
         $validated['type'] = 'deposit';
+
+
         $wallet = Wallet::find($id);
 
         if ($wallet == null) {
@@ -68,7 +70,6 @@ class WalletService
                 'message' => 'Wallet introuvable'
             ], 404);
         }
-
 
         $validated['balance_after'] = $wallet->balance + $validated['amount'];
 
@@ -114,7 +115,7 @@ class WalletService
             return response()->json([
                 'success' => false,
                 'message' => "Solde insuffisant. Solde actuel : $wallet->balance $"
-            ],400);
+            ], 400);
         }
 
         $validated['balance_after'] = $wallet->balance - $validated['amount'];

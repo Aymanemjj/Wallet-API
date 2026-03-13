@@ -41,7 +41,7 @@ class LoginUser extends FormRequest
         ];
     }
 
-/*     public function failedValidation(Validator $validator)
+    public function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();
         $response = response()->json([
@@ -51,5 +51,5 @@ class LoginUser extends FormRequest
 
         throw new HttpResponseException($response);
     }
- */
+
 }

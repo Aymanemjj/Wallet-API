@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware("auth:sanctum")->group(function () {
 
     Route::get('/user', [AuthenticationController::class, 'profile']);
-    Route::post('/logout', [AuthenticationController::class, 'logOut']);
+    Route::post('/logout', [AuthenticationController::class, 'logOut'])->name('logout');
 
 
     Route::post('/wallets', [WalletController::class, 'store']);
@@ -26,13 +26,9 @@ Route::middleware("auth:sanctum")->group(function () {
 
 
 
-Route::post('/register', [AuthenticationController::class, 'register']);
-Route::post('/login', [AuthenticationController::class, 'login']);
+Route::post('/register', [AuthenticationController::class, 'register'])->name('register');
+Route::post('/login', [AuthenticationController::class, 'login'])->name('login');
 
 
 
-Route::get('/register', function () {
-    return response()->json([
-        'message' => 'enter'
-    ]);
-});
+

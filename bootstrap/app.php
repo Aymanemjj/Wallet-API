@@ -40,11 +40,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 401);
         });
 
-        $exceptions->render(function (\Throwable $e, $request) {
+        $exceptions->render(function (\Exception $e, $request) {
             return response()->json([
                 'success' => false,
                 'message' => 'error intern de serveur',
                 'exception' => "Une erreur interne est survenue. Veuillez réessayer.",
+                "error"=> $e->getMessage()
             ], 500);
         });
     })->create();
