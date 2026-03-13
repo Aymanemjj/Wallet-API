@@ -15,4 +15,9 @@ class Wallet extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+
+    public static function exists($id){
+        return Wallet::find($id) != null;
+    }
 }

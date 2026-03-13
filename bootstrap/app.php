@@ -32,19 +32,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'Méthod HTTP non autorisé',
             ], 405);
         });
-
-/*         $exceptions->render(function (AuthorizationException $e, $request) {
+        
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
             return response()->json([
                 'success' => false,
-                'message' => 'unauthenticated',
-            ], 500);
-        }); */
-        
+                'message' => 'Non authentifié',
+            ], 401);
+        });
+
         $exceptions->render(function (\Throwable $e, $request) {
             return response()->json([
                 'success' => false,
                 'message' => 'error intern de serveur',
-                'exception'=> $e->getMessage(),
+                'exception' => "Une erreur interne est survenue. Veuillez réessayer.",
             ], 500);
         });
     })->create();

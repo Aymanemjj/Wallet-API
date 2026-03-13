@@ -57,4 +57,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function isOwner($id){
+        return Wallet::find($id)->user_id == $this->id;
+    }
 }

@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransaction;
+use App\Http\Resources\TransactionCollection;
+use App\Http\Resources\TransactionHistoryResource;
 use App\Models\Transaction;
+use App\Models\Wallet;
 use App\Services\TransactionService;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -29,10 +34,10 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store($id,StoreTransaction $request)
+    public function store($id, StoreTransaction $request)
     {
         try {
-            return $this->TransactionService->store($id,$request);
+            return $this->TransactionService->store($id, $request);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -46,13 +51,28 @@ class TransactionController extends Controller
      */
     public function show($id)
     {
-        $Rtransactions = Transaction::where('receiver_wallet_id', $id)->get();
-        $Stransactions = Transaction::where('sender_wallet_id', $id)->get();
+        if (!Wallet::exists($id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ressource introuvable',
+            ], 404);
+        }
+
+        if (Auth::user()->isOwner($id) == false) {
+            return response()->json([
+                'success' => false,
+                'message' => "Vous n'êtes pas autorisé à effectuer cette action"
+
+            ]);
+        }
+
+        $transactions = Transaction::where('wallet_id', $id)->get();
+
         return response()->json([
             'success' => true,
-            'message' => 'Transaction history',
-            'sent' => $Stransactions,
-            'recieved'=>$Rtransactions,
+            'message' => 'Historique des transactions récupéré',
+            'data' => TransactionHistoryResource::collection($transactions)
+
         ]);
     }
 
